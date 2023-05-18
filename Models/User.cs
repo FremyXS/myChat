@@ -6,41 +6,22 @@ namespace Pract.Models
     {
         public long Id { get; set; }
         public string Name { get; set; }
-        public string Login { get; set; }
         public ICollection<ChatRoom>? ChatRooms { get; set; }
         public ICollection<ChatMessage>? ChatMessages{ get; set; }
-        public bool IsDeleted { get; set; }
-        public DateTime? DeleteDate { get; set; }
+        public long AccountId { get; set; }
+        public Account? Account { get; set; }
 
         public User() { }
 
-        public User(long id, string name, string login)
+        public User(string name, Account account)
         {
-            Id = id;
             Name = name;
-            Login = login;
-            IsDeleted = false;
-            DeleteDate = null;
+            Account = account;
         }
 
-        public User(UserRequest userRequest)
+        public User Update(User userRequest)
         {
-            Name = userRequest.UserName;
-            Login = userRequest.UserLogin;
-        }
-
-        public User Update(UserRequest userRequest)
-        {
-            if(userRequest.UserName is not null) Name = userRequest.UserName;
-            if (userRequest.UserLogin is not null) Login = userRequest.UserLogin;
-
-            return this;
-        }
-
-        public User Delete()
-        {
-            IsDeleted = true;
-            DeleteDate = DateTime.UtcNow;
+            if(userRequest.Name is not null) Name = userRequest.Name;
 
             return this;
         }

@@ -16,7 +16,7 @@ namespace Pract.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] AccountRequest accountRequest)
+        public async Task<IActionResult> Login([FromBody] AccountLoginRequest accountRequest)
         {
             try
             {
@@ -31,7 +31,7 @@ namespace Pract.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] AccountRequest accountRequest)
+        public async Task<IActionResult> Register([FromBody] AccountCreateRequest accountRequest)
         {
             try
             {
@@ -58,15 +58,14 @@ namespace Pract.Controllers
             return Ok();
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpGet("profile")]
         public async Task<IActionResult> Profile()
         {
             // получаем идентификатор пользователя из Claims
-            var userId = int.Parse(User.FindFirst(ClaimTypes.Name)?.Value);
+            var login = User.FindFirst(ClaimTypes.Name)?.Value;
 
-            // удаляем информацию аутентификации из базы данных или хранилища
-            var account = await _accountService.GetAccount(userId);
+            var account = await _accountService.GetAccount(login);
 
             return Ok(account);
         }

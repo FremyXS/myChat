@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pract.Database;
 using Pract.Dto;
+using Pract.Mappers;
 using Pract.Models;
 using Pract.Requests;
 
@@ -16,14 +17,14 @@ namespace Pract.Services
 
         public async Task<ChatRoomDto> GetChatRoomById(long chatRoomId)
         {
-            var chatRooms = await _chatContext.ChatRooms.FirstOrDefaultAsync(el => el.Id == chatRoomId);
+            var chatRoom = await _chatContext.ChatRooms.FirstOrDefaultAsync(el => el.Id == chatRoomId);
 
-            if(chatRooms == null)
+            if(chatRoom == null)
             {
                 throw new Exception("Chat room is not live");
             }
 
-            return new ChatRoomDto(chatRooms);
+            return chatRoom.ToDto();
         }
 
         public async Task<IEnumerable<ChatRoomDto>> GetChatRoomsByUserId(long userId)
@@ -36,15 +37,17 @@ namespace Pract.Services
                 throw new Exception("User is not live");
             }
 
-            var chatRooms = user.ChatRooms.Select(chatRoom => new ChatRoomDto(chatRoom));
+            var chatRooms = user.ChatRooms.Select(chatRoom => chatRoom.ToDto());
 
             return chatRooms;
         }
 
         public async Task<ChatRoomDto> CreateChatRoom(ChatRoomRequest chatRoomRequest)
         {
+            var allUsers = await _chatContext.Users.ToListAsync();
+
             var isUsersLive = chatRoomRequest.UsersId.All(
-                el => (_chatContext.Users.FirstOrDefault(user => user.Id == el) != null)
+                el => (allUsers.FirstOrDefault(user => user.Id == el) != null)
             );
 
             if (!isUsersLive)
@@ -53,31 +56,37 @@ namespace Pract.Services
             }
 
             var users = chatRoomRequest.UsersId.Select(id =>
-                _chatContext.Users.FirstOrDefaultAsync(user => user.Id == id).Result
+                allUsers.First(user => user.Id == id)
             );
 
-            var chatRoom = new ChatRoom(chatRoomRequest, users);
+            //var chatRoom = new ChatRoom(chatRoomRequest, users);
 
-            var chatModel = await _chatContext.AddAsync(chatRoom);
+            var chatRoom = chatRoomRequest.ToMoel();
+
+            chatRoom.Users = users.ToList();
+
+            await _chatContext.AddAsync(chatRoom);
 
             await _chatContext.SaveChangesAsync();
 
-            return new ChatRoomDto(chatModel.Entity);
+            return chatRoom.ToDto();
         }
 
         public async Task<ChatRoomDto> UpdateChatRoom(long chatRoomId, ChatRoomRequest chatRoomRequest)
         {
-            var chatRooms = await _chatContext.ChatRooms.Include(x => x.Users)
+            var chatRoom = await _chatContext.ChatRooms.Include(x => x.Users)
                 .FirstOrDefaultAsync(el => el.Id == chatRoomId);
 
 
-            if (chatRooms == null)
+            if (chatRoom == null)
             {
                 throw new Exception("Chat room is not live");
             }
 
+            var allUsers = await _chatContext.Users.ToListAsync();
+
             var isUsersLive = chatRoomRequest.UsersId.All(
-                el => (_chatContext.Users.FirstOrDefault(user => user.Id == el) != null)
+                el => (allUsers.FirstOrDefault(user => user.Id == el) != null)
             );
 
             if (!isUsersLive)
@@ -86,14 +95,16 @@ namespace Pract.Services
             }
 
             var users = chatRoomRequest.UsersId.Select(id =>
-                 _chatContext.Users.FirstOrDefaultAsync(user => user.Id == id).Result
+                 allUsers.First(user => user.Id == id)
             );
 
-            var updateChatRoom =  _chatContext.ChatRooms.Update(chatRooms.Update(chatRoomRequest, users));
+            chatRoom = chatRoom.Update(chatRoomRequest.Title, users);
 
-            _chatContext.SaveChangesAsync();
+            _chatContext.ChatRooms.Update(chatRoom);
 
-            return new ChatRoomDto(updateChatRoom.Entity);
+            await _chatContext.SaveChangesAsync();
+
+            return chatRoom.ToDto();
         }
         public async Task<ChatRoomDto> DeleteChatRoom(long id)
         {
@@ -104,11 +115,13 @@ namespace Pract.Services
                 throw new Exception("Chat Room is not live");
             }
 
-            var updateChatRoom = _chatContext.ChatRooms.Update(chatRoom.Delete());
+            chatRoom = chatRoom.Delete();
 
-            _chatContext.SaveChangesAsync();
+            var updateChatRoom = _chatContext.ChatRooms.Update(chatRoom);
 
-            return new ChatRoomDto(updateChatRoom.Entity);
+            await _chatContext.SaveChangesAsync();
+
+            return chatRoom.ToDto();
 
         }
 

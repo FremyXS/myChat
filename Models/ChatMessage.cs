@@ -12,15 +12,5 @@ namespace Pract.Models
         public ChatRoom? ChatRoom { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeleteDate { get; set; } = null;
-
-        public ChatMessage() { }
-
-        public ChatMessage(ChatMessageRequest chatMessageRequest)
-        {
-            Message = chatMessageRequest.Message;
-            UserId = chatMessageRequest.UserId;
-            ChatRoomId = chatMessageRequest.ChatRoomId;
-
-        }
     }
 }

@@ -10,10 +10,5 @@ namespace Pract.Dto
         {
 
         }
-
-        public ChatRoomDto(ChatRoom chatRoom)
-        {
-            Title = chatRoom.Title;
-        }
     }
 }

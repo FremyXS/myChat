@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pract.Database;
 using Pract.Dto;
+using Pract.Mappers;
 using Pract.Models;
 using Pract.Requests;
 using System.Linq;
@@ -25,32 +26,26 @@ namespace Pract.Services
                 throw new Exception("User is not live");
             }
 
-            return new UserDto(user);
+            return user.ToDto();
         }
 
         public async Task<IEnumerable<UserDto>> GetUsers()
         {
-            var users = _chatContext.Users.Select(el => new UserDto(el));
+            var users = _chatContext.Users.Select(el => el.ToDto());
 
 
             return users;
         }
 
-        public async Task<UserDto> CreateUser(UserRequest userRequest)
-        {
-            var user = await _chatContext.Users.FirstOrDefaultAsync(x => x.Login == userRequest.UserLogin);
+        //public async Task<UserDto> CreateUser(UserRequest userRequest)
+        //{
 
-            if(user != null)
-            {
-                throw new Exception("User is live");
-            }
+        //    var createUser = await _chatContext.Users.AddAsync(new User(userRequest));
 
-            var createUser = await _chatContext.Users.AddAsync(new User(userRequest));
+        //    _chatContext.SaveChangesAsync();
 
-            _chatContext.SaveChangesAsync();
-
-            return new UserDto(createUser.Entity);
-        }
+        //    return new UserDto(createUser.Entity);
+        //}
 
         public async Task<UserDto> UpdateUser(long id, UserRequest userRequest)
         {
@@ -61,28 +56,32 @@ namespace Pract.Services
                 throw new Exception("Incorrect login or id");
             }
 
-           var updateUser = _chatContext.Users.Update(user.Update(userRequest));
+            var newUser = userRequest.ToModel();
+
+            user = user.Update(newUser);
+
+           var updateUser = _chatContext.Users.Update(user);
 
             _chatContext.SaveChangesAsync();
 
-            return new UserDto(updateUser.Entity);
+            return user.ToDto();
         }
 
-        public async Task<UserDto> DeleteUser(long id)
-        {
-            var user = await _chatContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+        //public async Task<UserDto> DeleteUser(long id)
+        //{
+        //    var user = await _chatContext.Users.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (user == null)
-            {
-                throw new Exception("User is not live");
-            }
+        //    if (user == null)
+        //    {
+        //        throw new Exception("User is not live");
+        //    }
 
-            var updateUser = _chatContext.Users.Update(user.Delete());
+        //    var updateUser = _chatContext.Users.Update(user.Delete());
 
-            _chatContext.SaveChangesAsync();
+        //    _chatContext.SaveChangesAsync();
 
-            return new UserDto(updateUser.Entity);
+        //    return new UserDto(updateUser.Entity);
 
-        }
+        //}
     }
 }

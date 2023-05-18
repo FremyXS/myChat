@@ -1,29 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore.Update.Internal;
-using Pract.Requests;
-
-namespace Pract.Models
+﻿namespace Pract.Models
 {
     public class ChatRoom
     {
         public long Id { get; set; }
         public string Title { get; set; }
-        public ICollection<User> Users { get; set; }
+        public ICollection<User>? Users { get; set; }
         public ICollection<ChatMessage>? ChatMessages { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeleteDate { get; set; } = null;
 
         public ChatRoom() { }
 
-        public ChatRoom(ChatRoomRequest chatRoomRequest, IEnumerable<User> users) 
+        public ChatRoom Update(string? title, IEnumerable<User>? users)
         {
-            Title = chatRoomRequest.Title;
-            Users = users.ToList();
-        }
+            if(title is not null)
+                Title = title;
 
-        public ChatRoom Update(ChatRoomRequest chatRoomRequest, IEnumerable<User> users)
-        {
-            Title = chatRoomRequest.Title;
-            Users = users.ToList();
+            if(users is not null)
+                Users = users.ToList();
 
             return this;
         }

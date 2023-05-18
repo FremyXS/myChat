@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Pract.Requests;
 using Pract.Services;
 
 namespace Pract.Controllers
 {
+    [Authorize]
     [Route("/user")]
     public class UserController: Controller
     {
@@ -42,20 +44,20 @@ namespace Pract.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] UserRequest userRequest)
-        {
-            try
-            {
-                var user = await _userService.CreateUser(userRequest);
+        //[HttpPost]
+        //public async Task<IActionResult> Create([FromBody] UserRequest userRequest)
+        //{
+        //    try
+        //    {
+        //        var user = await _userService.CreateUser(userRequest);
 
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //        return Ok(user);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         [HttpPatch("{id:long}")]
         public async Task<IActionResult> Update([FromRoute] long id, [FromBody] UserRequest userRequest)
@@ -72,19 +74,19 @@ namespace Pract.Controllers
             }
         }
 
-        [HttpDelete("{id:long}")]
-        public async Task<IActionResult> Delete([FromRoute] long id)
-        {
-            try
-            {
-                var user = await _userService.DeleteUser(id);
+        //[HttpDelete("{id:long}")]
+        //public async Task<IActionResult> Delete([FromRoute] long id)
+        //{
+        //    try
+        //    {
+        //        var user = await _userService.DeleteUser(id);
 
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //        return Ok(user);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
     }
 }

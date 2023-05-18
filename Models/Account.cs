@@ -9,16 +9,17 @@ namespace Pract.Models
         public string Login { get; set; }
         public byte[] PasswordSalt { get; set; }
         public byte[] PasswordHash { get; set; }
+        public User? User { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeleteDate { get; set; }
 
-        public Account() { }
-        public Account(AccountRequest accountRequest, byte[] passwordSalt, byte[] passwordHash)
-        {
-            Email = accountRequest.Email;
-            Login = accountRequest.Login;
-            PasswordSalt = passwordSalt;
-            PasswordHash = passwordHash;
-        }
+        //public Account() { }
+        //public Account(AccountCreateRequest accountRequest, byte[] passwordSalt, byte[] passwordHash)
+        //{
+        //    Email = accountRequest.Email;
+        //    Login = accountRequest.Login;
+        //    PasswordSalt = passwordSalt;
+        //    PasswordHash = passwordHash;
+        //}
     }
 }

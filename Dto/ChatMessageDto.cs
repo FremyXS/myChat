@@ -6,11 +6,6 @@ namespace Pract.Dto
     {
         public string Message { get; set; }
         public long UserId { get; set; }
-        public ChatMessageDto() { }
-        public ChatMessageDto(ChatMessage message)
-        {
-            Message = message.Message;
-            UserId = message.UserId;
-        }
+        public string Name { get; set; }
     }
 }

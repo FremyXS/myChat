@@ -1,10 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Pract.Database;
 using Pract.Dto;
+using Pract.Mappers;
 using Pract.Models;
 using Pract.Requests;
+using Pract.Validators;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,13 +19,26 @@ namespace Pract.Services
     public class AccountService
     {
         private readonly ChatContext _chatContext;
-        public AccountService(ChatContext chatContext)
+        private readonly AccountCreateRequestValidator _acountCreateRequestValidator;
+        private readonly AccountLoginRequestValidator _accountLoginRequestValidator;
+        public AccountService(ChatContext chatContext, 
+            AccountCreateRequestValidator acountCreateRequestValidator,
+            AccountLoginRequestValidator accountLoginRequestValidator)
         {
             _chatContext = chatContext;
+            _acountCreateRequestValidator = acountCreateRequestValidator;
+            _accountLoginRequestValidator = accountLoginRequestValidator;
         }
 
-        public async Task<Account> CreateAccount(AccountRequest accountRequest)
+        public async Task<Account> CreateAccount(AccountCreateRequest accountRequest)
         {
+            var validationResult = await _acountCreateRequestValidator.ValidateAsync(accountRequest);
+
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors[0].ErrorMessage);
+            }
+
             var account = await _chatContext.Accounts
                 .FirstOrDefaultAsync(x => x.Email.Equals(accountRequest.Email) || x.Login.Equals(accountRequest.Login));
 
@@ -34,18 +50,36 @@ namespace Pract.Services
             byte[] passwordHash, passwordSalt;
             CreatePasswordHash(accountRequest.Password, out passwordHash, out passwordSalt);
 
-            var newAccount = await _chatContext.Accounts.AddAsync(
-                new Account(accountRequest, passwordSalt, passwordHash)
+            var newAccount = accountRequest.ToModel();
+            newAccount.PasswordSalt = passwordSalt;
+            newAccount.PasswordHash = passwordHash;
+
+            await _chatContext.Accounts.AddAsync(
+                newAccount
+            );
+
+            var count = await _chatContext.Users.CountAsync();
+            var nameUser = $"User{count + 1}";
+
+            await _chatContext.Users.AddAsync(
+                new User(nameUser, newAccount)
             );
 
             await _chatContext.SaveChangesAsync();
 
-            return newAccount.Entity;
+            return newAccount;
         }
 
-        public async Task<AccountDto> Authenticate(AccountRequest accountRequest)
+        public async Task<AccountDto> Authenticate(AccountLoginRequest accountRequest)
         {
-            var account = await _chatContext.Accounts.FirstOrDefaultAsync(x => x.Email == accountRequest.Email || x.Login == accountRequest.Login);
+            var validationResult = await _accountLoginRequestValidator.ValidateAsync(accountRequest);
+
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors[0].ErrorMessage);
+            }
+
+            var account = await _chatContext.Accounts.FirstOrDefaultAsync(x => x.Login == accountRequest.Login);
 
             if (account == null)
             {
@@ -60,9 +94,11 @@ namespace Pract.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
+                Issuer = AuthOptions.ISSUER,
+                Audience = AuthOptions.AUDIENCE,
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                new Claim(ClaimTypes.Name, account.Id.ToString())
+                new Claim(ClaimTypes.Name, account.Login)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256Signature)
@@ -79,9 +115,9 @@ namespace Pract.Services
             await _chatContext.SaveChangesAsync();
         }
 
-        public async Task<Account> GetAccount(int accountId)
+        public async Task<Account> GetAccount(string login)
         {
-            var account = await _chatContext.Accounts.FirstOrDefaultAsync(x => x.Id == accountId);
+            var account = await _chatContext.Accounts.FirstOrDefaultAsync(x => x.Login == login);
 
             if (account == null)
             {

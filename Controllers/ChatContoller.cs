@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Pract.Database;
 using Pract.Models;
 using Pract.Requests;
@@ -6,6 +7,7 @@ using Pract.Services;
 
 namespace Pract.Controllers
 {
+    [Authorize]
     [Route("/chat")]
     public class ChatContoller : Controller
     {

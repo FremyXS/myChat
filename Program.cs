@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Pract.Database;
 using Pract.Services;
+using Pract.Validators;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,9 +24,16 @@ builder.Services.AddDbContext<ChatContext>(el =>
 });
 
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+{
+
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(options =>
     {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -44,6 +53,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddScoped<ChatContext>();
+
+builder.Services.AddScoped<AccountLoginRequestValidator>();
+builder.Services.AddScoped<AccountCreateRequestValidator>();
 
 builder.Services.AddTransient<AccountService>();
 builder.Services.AddTransient<UserService>();

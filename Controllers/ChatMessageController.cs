@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Pract.Requests;
 using Pract.Services;
 
 namespace Pract.Controllers
 {
+    [Authorize]
     [Route("/message")]
     public class ChatMessageController: Controller
     {

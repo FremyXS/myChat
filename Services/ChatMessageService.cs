@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pract.Database;
 using Pract.Dto;
+using Pract.Mappers;
 using Pract.Models;
 using Pract.Requests;
 
@@ -25,12 +26,13 @@ namespace Pract.Services
                 throw new Exception("Message is not live");
             }
 
-            return new ChatMessageDto(message);
+            return message.ToDto();
         }
 
         public async Task<IEnumerable<ChatMessageDto>> GetMessagesByChatId(long chatId)
         {
             var chat = await _chatContext.ChatRooms.Include(el => el.ChatMessages)
+                .Include(el => el.Users)
                 .FirstOrDefaultAsync(x => x.Id == chatId);
 
             if (chat == null)
@@ -38,7 +40,7 @@ namespace Pract.Services
                 throw new Exception("Chat is not live");
             }
 
-            var messages = chat.ChatMessages.Select(el => new ChatMessageDto(el));
+            var messages = chat.ChatMessages.Select(el => el.ToDto());
 
             return messages;
         }
@@ -59,10 +61,13 @@ namespace Pract.Services
                 throw new Exception("Chat is not live");
             }
 
-            var message = await _chatContext.ChatMessages.AddAsync(new ChatMessage(messageRequest));
-            _chatContext.SaveChangesAsync();
+            var message = messageRequest.ToModel();
 
-            return new ChatMessageDto(message.Entity);
+            await _chatContext.ChatMessages.AddAsync(message);
+
+            await _chatContext.SaveChangesAsync();
+
+            return message.ToDto();
         }
 
     }
