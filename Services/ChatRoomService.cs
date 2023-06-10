@@ -27,10 +27,10 @@ namespace Pract.Services
             return chatRoom.ToDto();
         }
 
-        public async Task<IEnumerable<ChatRoomDto>> GetChatRoomsByUserId(long userId)
+        public async Task<IEnumerable<ChatRoomDto>> GetChatRoomsByUserId(string login)
         {
-            var user = await _chatContext.Users.Include(el => el.ChatRooms)
-                .FirstOrDefaultAsync(user => user.Id == userId);
+            var user = await _chatContext.Users.Include(el => el.ChatRooms).Include(el => el.Account)
+                .FirstOrDefaultAsync(user => user.Account.Login == login);
 
             if (user == null)
             {

@@ -98,7 +98,7 @@ namespace Pract.Services
                 Audience = AuthOptions.AUDIENCE,
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                new Claim(ClaimTypes.Name, account.Login)
+                new Claim(ClaimTypes.Name, account.Login),
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256Signature)

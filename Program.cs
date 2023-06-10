@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Pract.Database;
+using Pract.Hubs;
 using Pract.Services;
 using Pract.Validators;
 using System.Text;
@@ -13,8 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddSignalR();
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ChatContext>(el =>
@@ -62,18 +63,21 @@ builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ChatRoomService>();
 builder.Services.AddTransient<ChatMessageService>();
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+//var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                      policy =>
-                      {
-                          policy.AllowAnyOrigin()
-                          .AllowAnyHeader()                                                  
-                          .AllowAnyMethod();
-                      });
-});
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy(name: MyAllowSpecificOrigins,
+//                      policy =>
+//                      {
+//                          policy
+//                          .AllowAnyOrigin()
+//                          .AllowAnyHeader()                                                  
+//                          .AllowAnyMethod()
+//                          .SetIsOriginAllowed(origin => true)
+//                          .AllowCredentials(); 
+//                      });
+//});
 
 var app = builder.Build();
 
@@ -86,10 +90,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors(MyAllowSpecificOrigins);
+//app.UseCors(MyAllowSpecificOrigins);
+app.UseCors(x => x
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .SetIsOriginAllowed(origin => true) // allow any origin
+        .AllowCredentials()); // allow credentials
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chathub");
+
 
 app.MapControllers();
 

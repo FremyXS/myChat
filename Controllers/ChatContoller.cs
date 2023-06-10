@@ -4,6 +4,7 @@ using Pract.Database;
 using Pract.Models;
 using Pract.Requests;
 using Pract.Services;
+using System.Security.Claims;
 
 namespace Pract.Controllers
 {
@@ -17,12 +18,14 @@ namespace Pract.Controllers
             _chatRoomService = chatRoomService;
         }
 
-        [HttpGet("user/{id:long}")]
-        public async Task<IActionResult> GetByIdUser([FromRoute] long id)
+        [HttpGet("user")]
+        public async Task<IActionResult> GetByIdUser()
         {
+            var login = User.FindFirst(ClaimTypes.Name)?.Value;
+
             try
             {
-                var chatRoom = await _chatRoomService.GetChatRoomsByUserId(id);
+                var chatRoom = await _chatRoomService.GetChatRoomsByUserId(login);
                 return Ok(chatRoom);
             }
             catch (Exception ex)
