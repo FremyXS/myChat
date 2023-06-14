@@ -2,13 +2,13 @@
 {
     public class AccountDto
     {
+        public long Id { get; set; }
         public string Token { get; set; }
         public string Login { get; set; }
+        public string Email { get; set; }
+        public string UserName { get; set; }
 
-        public AccountDto(string token, string login)
-        {
-            Token = token;
-            Login = login;
-        }
+        public long UserId { get; set; }
+
     }
 }

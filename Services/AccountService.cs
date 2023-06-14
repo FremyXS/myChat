@@ -106,7 +106,10 @@ namespace Pract.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            return new AccountDto(tokenString, account.Login);
+            var dto = account.ToDto();
+            dto.Token = tokenString;
+
+            return dto;
         }
         public async void RemoveRefreshTokens(int accountId)
         {
@@ -115,16 +118,16 @@ namespace Pract.Services
             await _chatContext.SaveChangesAsync();
         }
 
-        public async Task<Account> GetAccount(string login)
+        public async Task<AccountDto> GetAccount(string login)
         {
-            var account = await _chatContext.Accounts.FirstOrDefaultAsync(x => x.Login == login);
+            var account = await _chatContext.Accounts.Include(user => user.User).FirstOrDefaultAsync(x => x.Login == login);
 
             if (account == null)
             {
                 throw new Exception("Email or Login are not live");
             }
 
-            return account;
+            return account.ToDto();
 
         }
         //public string RefreshToken(int userId, string refreshToken)

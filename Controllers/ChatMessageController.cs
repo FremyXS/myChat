@@ -26,7 +26,7 @@ namespace Pract.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return NotFound();
             }
         }
 
@@ -40,7 +40,7 @@ namespace Pract.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return NotFound();
             }
         }
 
@@ -54,7 +54,7 @@ namespace Pract.Controllers
             }
             catch(Exception ex)
             {
-                return BadRequest(ex);
+                return NotFound();
             }
         }
     }

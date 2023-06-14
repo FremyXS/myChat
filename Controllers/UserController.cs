@@ -26,7 +26,7 @@ namespace Pract.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound();
             }
         }
         [HttpGet("all")]
@@ -40,7 +40,7 @@ namespace Pract.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound();
             }
         }
 
@@ -70,7 +70,7 @@ namespace Pract.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound();
             }
         }
 
